@@ -1,4 +1,5 @@
 import numpy as np
+import math
 import random
 
 class Neural_Net:
@@ -13,29 +14,86 @@ class Neural_Net:
 		self.num_inputs = num_inputs
 		self.layer_size = layer_size
 		self.num_outputs = num_outputs
-		self.init_neural_network()
+		self.init_weights()
+		self.init_biases()
+		self.init_neurons()
 		
+	# inits neural networks weights ranging from -2.0 to 2 to start.
+	def init_weights(self):
 
-	def init_neural_network(self):
-		self.input_weights = np.asarray([[random.uniform(-2.0, 2) for i in range(self.num_inputs)] for i in range(self.layer_size)])
-		self.hidden_weights = [] 
+		# create emptry array to store weights for all layers
+		self.weights = [] 
+
+		# create first set of weights from input layer to first hidden layer
+		self.weights.append(np.asarray([[random.uniform(-1.5, 1.5) for i in range(self.num_inputs)] for i in range(self.layer_size)]))
+		# for each hidden layer
 		for layer in range(self.num_layers):
+			# if it is the last layer, append weight matrix size (num_outputs, layer_size)
 			if layer == self.num_layers - 1:
-				self.hidden_weights.append(np.random.uniform(low= -2.0, high = 2.0, size=(self.num_outputs, self.layer_size)))
+				self.weights.append(np.random.uniform(low= -1.5, high = 1.5, size=(self.num_outputs, self.layer_size)))
+			# else, append weight matrix size (layer_size, layer_size)
 			else:
-				self.hidden_weights.append(np.random.uniform(low= -2.0, high= 2.0, size=(self.layer_size, self.layer_size)))
+				self.weights.append(np.random.uniform(low= -1.5, high= 1.5, size=(self.layer_size, self.layer_size)))
+
+	# init biases to add to each result.
+	def init_biases(self):
+		self.biases = []
+		# for each hidden layer + the output layer
+		for i in range(self.num_layers + 1):
+			# if output layer, append array of size num_outputs with biases between -5, 5
+			if i == self.num_layers:
+				self.biases.append(np.random.uniform(low = -5.0, high = 5.0, size = self.num_outputs))
+			# else, append array of size layer_size with biases between -5, 5
+			else:
+				self.biases.append(np.random.uniform(low = -5.0, high = 5.0, size = self.layer_size))
+
+	# init neurons.
+	def init_neurons(self):
+		self.neurons = []
+		# for each hidden layer + the output layer
+		for i in range(self.num_layers + 1):
+			# if output layer, append array of size num_outputs with biases between -5, 5
+			if i == self.num_layers:
+				self.neurons.append(np.zeros(self.num_outputs))
+			# else, append array of size layer_size with biases between -5, 5
+			else:
+				self.neurons.append(np.zeros(self.layer_size))
+
+	# take in input array and convert to np array.
+	def obtain_inputs(self, inputs):
+		self.current_inputs = np.asarray(inputs)
+
+	# basic feed forward algorithm to generate some output.
+	# first take inputs, multiply by weight matrix, 
+	# then add biases to result, 
+	# then run through activation function.
+	def feed_forward(self, inputs, layer):	
+		self.neurons[layer] = np.matmul(self.weights[layer], inputs) + self.biases[layer]
+		self.neurons[layer] = np.array(list(map(activ_function, self.neurons[layer])))
+
+		if layer < self.num_layers:
+			self.feed_forward(self.neurons[layer], layer + 1)
+
+	# function to train this algorithm
+	def train(self):
+		self.feed_forward(self.current_inputs, 0)
+		print(self.current_inputs, self.neurons[-1])
+
 			
-	def print_hidden_weights(self, layer):
-		print(self.hidden_weights[layer])
+	def print_weights(self, layer):
+		print(self.weights[layer])
 		print()
 
-	def print_input_weights(self):
-		print(self.input_weights)
+	def print_biases(self):
+		for layer in range(self.num_layers + 1):
+			print(self.biases[layer])
+			print()
 
 	def print_all_weights(self):
-		print("input layer:\n")
-		self.print_input_weights()
 
-		for layer in range(self.num_layers):
-			print("layer {0}:\n".format(layer))
-			self.print_hidden_weights(layer)
+		for layer in range(self.num_layers + 1):
+			print("layer {0}:\n".format(layer - 1))
+			self.print_weights(layer)
+
+def activ_function(x):
+	return x / (1 + np.exp(-x))
