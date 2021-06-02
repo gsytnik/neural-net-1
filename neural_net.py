@@ -2,6 +2,9 @@ import numpy as np
 import math
 import random
 
+beta = 1.5
+np.set_printoptions(precision=5)
+
 class Neural_Net:
 
 	# create a neural network which is generated via a specific number of inputs, 
@@ -25,7 +28,7 @@ class Neural_Net:
 		self.weights = [] 
 
 		# create first set of weights from input layer to first hidden layer
-		self.weights.append(np.asarray([[random.uniform(-1.5, 1.5) for i in range(self.num_inputs)] for i in range(self.layer_size)]))
+		self.weights.append(np.random.uniform(low= -1.5, high = 1.5, size=(self.layer_size, self.num_inputs)))
 		# for each hidden layer
 		for layer in range(self.num_layers):
 			# if it is the last layer, append weight matrix size (num_outputs, layer_size)
@@ -95,5 +98,16 @@ class Neural_Net:
 			print("layer {0}:\n".format(layer - 1))
 			self.print_weights(layer)
 
+def sigmoid(x):
+	if x >= 0 :
+		z =  np.exp(-x)
+		return 1 / (1 + z)
+	else:
+		z = np.exp(x)
+		return z / (1 + z)
+
 def activ_function(x):
-	return x / (1 + np.exp(-x))
+	return beta * x * sigmoid(x)
+
+def activ_deriv(x):
+	return activ_function(x) + (sigmoid(x) * (beta - activ_function(x)))

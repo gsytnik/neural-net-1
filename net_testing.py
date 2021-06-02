@@ -7,7 +7,5 @@ def main():
 	network.obtain_inputs([1, -1, 1, 0, 0, 0, -1, 1, 1])
 	network.train()
 
-
-
 if __name__ == '__main__':
     main()
